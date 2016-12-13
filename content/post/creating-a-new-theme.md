@@ -8,6 +8,7 @@ menu:
 next: /tutorials/github-pages-blog
 prev: /tutorials/automated-deployments
 title: Creating a New Theme
+draft: true
 weight: 10
 ---
 
