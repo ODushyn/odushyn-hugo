@@ -4,10 +4,12 @@ title = "About"
 hidden = true
 +++
 
-I'm programmer, who likes investigating and creating something interesting and new. I'm keen on Web Technologies and like both front and back end development. 
+I am a software engineer. 
 
-Besides programming, I enjoy playing chess, table tennis, cycling, football and snowboarding.
+I mostly use Java and Javascript stacks for development. 
 
-Find me on any link at the bottom a page.
+Besides, I enjoy playing table tennis, chess and snowboarding.
 
-Email me:  <wo.dushyn@gmail.com>
+Email me:  <wo.dushyn@gmail.com> or find me by clicking on any link bellow.
+
+
