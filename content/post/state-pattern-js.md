@@ -102,19 +102,23 @@ let Green = function() {
   }
 };
 ```
-We have created a common for all states function *transition* that encapsulates(holds) all particular state internal data(state name) 
-and its transition rules. The same should be done for each state. Basically, state object by itself only answers the question: 
+We have created an object that encapsulates(holds) all particular state internal data(i.e. state name) 
+and implements common for all states function *transition* that contains rules. 
+The same should be done for each state. Basically, state object by itself only answers the question: 
+
 *"What must be the next state according to the defined rules?"*.
 ```js
 let Yellow = function() {
   this.name = "Yellow";
   this.transition = function(trafficLight) {
+    // according to the rules next state should be Red
     trafficLight.setLight(new Red());
   }
 };
 
 let Red = function(trafficLight) {
   this.name = "Red";
+  // according to the rules next state should be Green
   this.transition = function(trafficLight) {
     trafficLight.setLight(new Green());
   }
