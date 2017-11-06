@@ -40,11 +40,11 @@ We interact with state machines every day.
 1. List of states: green/yellow/red
 2. Rules:   
 
-    -if light is green for n sec move to yellow condition.
+    -if light is green move to yellow condition.
     
-    -if light is yellow for m sec move to red condition.
+    -if light is yellow move to red condition.
     
-    -if light is red for l sec move to green condition
+    -if light is red move to green condition
 3. Initial state: green.
 
 ### Implementation without state pattern
