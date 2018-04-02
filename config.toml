@@ -27,6 +27,7 @@ canonifyurls = true
 	# Navigation links
 	home = ""
 	about = ""
+	projects = ""
 	subscribe = ""
 	# Pagination links
 	olderPosts = ""

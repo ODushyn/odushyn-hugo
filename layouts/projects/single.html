@@ -1,0 +1,19 @@
+{{ $url := replace .Permalink .Site.BaseURL "" }}
+{{ partial "head.html" . }}
+<body>
+{{ partial "nav.html" . }}
+
+{{ if ne $url "projects/quizbot/privacy-policy/" }}
+{{ partial "profile.html" . }}
+{{ end }}
+
+<section id="wrapper" class="home">
+  {{ .Content }}
+  {{ if ne $url "projects/quizbot/privacy-policy/" }}
+  {{ partial "footer.html" . }}
+  {{ end }}
+</section>
+
+{{ partial "js.html" . }}
+</body>
+</html>
