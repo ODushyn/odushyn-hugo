@@ -8,7 +8,7 @@ title = "The main idea behind rxjs"
 ### What is rxjs?
 
 ReactiveX is a library for composing asynchronous and event-based programs by using observable sequences.
-rxjs is implimentation  Observer pattern in javascript programming language ([source](http://reactivex.io/intro.html)).
+rxjs is implementation of  Observer pattern in javascript programming language ([source](http://reactivex.io/intro.html)).
 
 Not clear yet...
 
