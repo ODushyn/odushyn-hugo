@@ -164,10 +164,11 @@ Note: `scan` first parameter is always aggregated value and the second one is em
 
 
 Conclusion: rxjs is (almost as any other library) just helps to solve same problems in different way.
- - introduces an abstraction for managing flows of events(first example) and the concept of Observable,
-Observer, Subscription operators and creates . 
- - helps to solve event based tasks rather in a declarative
+
+- introduces an abstraction for managing flows of events(first example) and the concept of Observable,
+Observer, Subscription operators and creates. 
+- helps to solve event based tasks rather in a declarative
 than imperative way.
- - code becomes more readable and programmer mainly thinks about which operators to apply instead of implementing
+- code becomes more readable and programmer mainly thinks about which operators to apply instead of implementing
 algorithms(2nd and 3rd examples).
 
