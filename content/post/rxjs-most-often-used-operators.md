@@ -9,8 +9,6 @@ In the previous [post](/post/rxjs-main-concept) I was explaining the main concep
 In this one I am going to cover the most often used operators from rxjs library.
 I will show basic examples of their usage inside angular application.
 
-![Operators](../assets/rxjs-main-operators/app_operators.png)
-
 Full source code is available on [github](https://github.com/ODushyn/angular-rxjs-operators-examples).
 
 ### 1. *map* - modifies values emitted by observable
