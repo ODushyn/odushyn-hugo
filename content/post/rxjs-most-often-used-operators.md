@@ -11,7 +11,7 @@ I will show basic examples of their usage inside angular application.
 
 ![Operators](../assets/rxjs-main-operators/app_operators.png)
 
-Full source code is available here: [TODO](add link to github)
+Full source code is available on [github](https://github.com/ODushyn/angular-rxjs-operators-examples).
 
 ### 1. *map* - modifies values emitted by observable
 
