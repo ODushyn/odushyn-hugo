@@ -1,0 +1,346 @@
+    <!DOCTYPE html>
+<html lang="en-us" >
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="Oleksandr Dushyn">
+  
+  
+  <meta name="description" content="Blogging site">
+  
+  <meta name="generator" content="Hugo 0.16" />
+  <title>State Pattern. JavaScript implementation. &middot; Some blog</title>
+  <link rel="shortcut icon" href="http://odushyn.github.io/images/favicon.ico">
+  <link rel="stylesheet" href="http://odushyn.github.io/css/style.css">
+  <link rel="stylesheet" href="http://odushyn.github.io/css/highlight.css">
+  <link rel="stylesheet" href="http://odushyn.github.io//css/open_sans_font.css">
+  
+
+  
+  <link rel="stylesheet" href="http://odushyn.github.io/fontawesome/css/font-awesome.min.css">
+  
+
+  
+</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='http://odushyn.github.io/'> <span class="arrow">←</span>Home</a>
+	
+
+	
+		<a href='http://odushyn.github.io/about'>About</a>
+	
+
+	
+	<a href='http://odushyn.github.io/projects'>Projects</a>
+	
+
+	
+</nav>
+
+        <section id="wrapper">
+            <article class="post">
+                <header>
+                    <h1>State Pattern. JavaScript implementation.</h1>
+                    <h2 class="headline">
+                    November 5, 2017 
+                    <br>
+                    
+                    </h2>
+                </header>
+                <section id="post-body">
+                    
+
+<h3 id="introduction">Introduction:</h3>
+
+<p><a href="https://en.wikipedia.org/wiki/State_pattern">According to wikipedia</a> it is a behavioral software design pattern that
+implements a <em>state machine</em> in an object-oriented way.</p>
+
+<p>What&rsquo;s <em>state machine</em>?
+Finite State Machine(FSM) is some abstract machine that can be in exactly one state at particular moment of time and
+has rules for changing the states(making transition).</p>
+
+<p>Basically, FSM can be defined by 3 things:</p>
+
+<ol>
+<li>list of states</li>
+<li>rules for chaning the states</li>
+<li>initial state</li>
+</ol>
+
+<h3 id="examples">Examples</h3>
+
+<p>We interact with state machines every day.</p>
+
+<ul>
+<li>traffic lights</li>
+<li>elevators</li>
+<li>ticket machines</li>
+<li>minibanks</li>
+</ul>
+
+<h3 id="defining-traffic-light-as-state-machine">Defining traffic light as state machine</h3>
+
+<ol>
+<li>List of states: green/yellow/red</li>
+
+<li><p>Rules:</p>
+
+<p>-if light is green move to yellow condition.</p>
+
+<p>-if light is yellow move to red condition.</p>
+
+<p>-if light is red move to green condition</p></li>
+
+<li><p>Initial state: green.</p></li>
+</ol>
+
+<h3 id="implementation-without-state-pattern">Implementation without state pattern</h3>
+
+<p>Before using state pattern itself let&rsquo;s try to implement traffic light logic straightforward. We are going to create
+object <em>State</em> that will represents traffic lights(green, yellow or red) and use if/else statements to handle lights
+changing.</p>
+
+<pre><code class="language-js">function LightMachine(light) {
+  // current state  
+  this.light = light;
+  printInfo(this.light);
+  
+  this.changeLight = function() {
+    // transition rules  
+    if (this.light === &quot;GREEN&quot;) {
+      this.light = &quot;YELLOW&quot;;
+    } else if (this.light === &quot;YELLOW&quot;) {
+      this.light = &quot;RED&quot;;
+    } else if (this.light === &quot;RED&quot;) {
+      this.light = &quot;GREEN&quot;;
+    }
+    printInfo(this.light);
+  };
+  
+  function printInfo(light){
+    console.log('Current light: ' + light);
+  }
+}
+
+// create initial state 'GREEN'
+var lightMachine = new LightMachine('GREEN');
+lightMachine.changeLight(); // YELLOW
+lightMachine.changeLight(); // RED
+lightMachine.changeLight(); // GREEN
+lightMachine.changeLight(); // YELLOW
+lightMachine.changeLight(); // RED
+</code></pre>
+
+<p>Everything looks great except the branched out and coupled code in the rules part. Considering more complex example, you will get
+more different and complicated if/else statements which makes code even less readable and maintainable.</p>
+
+<h3 id="implementation-with-state-pattern">Implementation with state pattern</h3>
+
+<p>So, let&rsquo;s try to decouple this code.</p>
+
+<p>The reason of such branching code is that we try to handle all transition logic in one place. Let&rsquo;s make it different way,
+so each state keeping its transition rules logic by itself.</p>
+
+<pre><code class="language-js">let Green = function() {
+  this.name = &quot;Green&quot;;
+  this.transition = function(trafficLight) {
+    trafficLight.setLight(new Yellow());
+  }
+};
+</code></pre>
+
+<p>We have created an object that encapsulates(holds) all particular state internal data(i.e. state name)
+and implements common for all states function <em>transition</em> that contains rules.
+The same should be done for each state. Basically, state object by itself only answers the question:</p>
+
+<p><em>&ldquo;What must be the next state according to the defined rules?&rdquo;</em>.</p>
+
+<pre><code class="language-js">let Yellow = function() {
+  this.name = &quot;Yellow&quot;;
+  this.transition = function(trafficLight) {
+    // according to the rules next state should be Red
+    trafficLight.setLight(new Red());
+  }
+};
+
+let Red = function(trafficLight) {
+  this.name = &quot;Red&quot;;
+  // according to the rules next state should be Green
+  this.transition = function(trafficLight) {
+    trafficLight.setLight(new Green());
+  }
+};
+</code></pre>
+
+<p>We are done with states, but we need to be able to start, stop the system, put system in the specified state,
+keep the particular state, implement any logic between the transitions.
+We also would like to know answers on following questions:</p>
+
+<ul>
+<li>What is the current state of the system?</li>
+<li>What are the statistics (how many times states are changed, what state is the most &ldquo;popular&rdquo;, etc)?</li>
+</ul>
+
+<p>Let&rsquo;s create a function for that exact reason. People usually  call it <em>context</em> object because it keeps information
+that&rsquo;s common and available for each state.</p>
+
+<pre><code>let TrafficLight = function(initialState) {
+  this.currentState = initialState;
+  
+  this.setLight = function(newLight) {
+    this.currentState = newLight;
+    console.log('Current state: ' + this.currentState.name);
+  }
+  this.changeLight = function() {
+    this.currentState.transition(this);
+  }
+};
+</code></pre>
+
+<p>As we see it contains two methods. <em>setLight</em> sets the current traffic light and <em>changeLight</em> is responsible
+for transition according to the current state&rsquo;s rules. The rules are encapsulated in each state object.
+Therefore, we do not have if/else hell and spaghetti code anymore</p>
+
+<p><em>There is only one interface(TrafficLight) which contains current state and delegates implementation of transitions to state objects.</em></p>
+
+<p>Code looks much more readable and cleaner than in the first approach. This approach is called &ldquo;State pattern&rdquo;.
+We are ready to use our traffic light implemented via <em>State Pattern</em> now!</p>
+
+<pre><code>var stateContext = new TrafficLight(new Green());
+stateContext.changeLight();
+stateContext.changeLight();
+stateContext.changeLight();
+stateContext.changeLight();
+stateContext.changeLight();
+</code></pre>
+
+<p>Check out <a href="http://plnkr.co/edit/iJo6CfGjX0EuiZ9BIj4l">plunker</a> to see full version.</p>
+
+<h3 id="smart-traffic-light">Smart traffic light</h3>
+
+<p>I&rsquo;ve added timing for switching between the lights to make our traffic light more real.
+Check out <a href="http://plnkr.co/edit/V5bUWp">this plunk</a></p>
+
+<p>Hope you enjoyed reading!</p>
+
+                </section>
+            </article>
+            <footer id="post-meta" class="clearfix">
+                <a href="https://twitter.com/ODushyn">
+                        <img class="avatar" src="http://odushyn.github.io/images/im.png">
+                        <div>
+                            <span class="dark">Oleksandr Dushyn</span>
+                            <span>The one who tries to understand</span>
+                        </div>
+                    </a>
+                <section id="sharing">
+                    <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2fodushyn.github.io%2fpost%2fstate-pattern-js%2f - State%20Pattern.%20JavaScript%20implementation. by @ODushyn"><span class="icon-twitter"> Tweet</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> Share</span>
+</a>
+
+                </section>
+            </footer>
+
+            <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'odushyn';
+    var disqus_identifier = 'http:\/\/odushyn.github.io\/post\/state-pattern-js\/';
+    var disqus_title = 'State Pattern. JavaScript implementation.';
+    var disqus_url = 'http:\/\/odushyn.github.io\/post\/state-pattern-js\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+            <ul id="post-list" class="archive readmore">
+    <h3>Read more</h3>
+    
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/rxjs-most-often-used-operators/">Most often used rxjs operators<aside class="dates">Jul 22</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/rxjs-main-concept/">The main idea behind rxjs<aside class="dates">Jul 10</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/state-pattern-js/">State Pattern. JavaScript implementation.<aside class="dates">Nov 5</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/http-return-errors-to-clients/">HTTP. How to return errors to clients?<aside class="dates">May 18</aside></a>
+        </li>
+        
+   
+</ul>
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.facebook.com/oleks.dushyn">
+        <i class="fa fa-facebook"></i>
+    </a>
+    
+    <a class="symbol" href="https://github.com/ODushyn">
+        <i class="fa fa-github"></i>
+    </a>
+    
+    <a class="symbol" href="https://twitter.com/ODushyn">
+        <i class="fa fa-twitter"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+        © Copyright 2018 Oleksandr Dushyn
+    
+    </p>
+</footer>
+
+        </section>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://odushyn.github.io/js/main.js"></script>
+<script src="http://odushyn.github.io/js/highlight.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+
+    </body>
+</html>

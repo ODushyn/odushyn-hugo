@@ -1,0 +1,713 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Some blog</title>
+    <link>http://odushyn.github.io/post/</link>
+    <description>Recent content in Posts on Some blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 22 Jul 2018 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://odushyn.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Most often used rxjs operators</title>
+      <link>http://odushyn.github.io/post/rxjs-most-often-used-operators/</link>
+      <pubDate>Sun, 22 Jul 2018 00:00:00 +0000</pubDate>
+      
+      <guid>http://odushyn.github.io/post/rxjs-most-often-used-operators/</guid>
+      <description>
+
+&lt;p&gt;In the previous &lt;a href=&#34;http://odushyn.github.io/post/rxjs-main-concept&#34;&gt;post&lt;/a&gt; I was explaining the main concept behind rxjs library.
+In this one I am going to cover the most often used operators from rxjs library.
+I will show basic examples of their usage inside angular application.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;../assets/rxjs-main-operators/app_operators.png&#34; alt=&#34;Operators&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Full source code is available on &lt;a href=&#34;https://github.com/ODushyn/angular-rxjs-operators-examples&#34;&gt;github&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&#34;1-map-modifies-values-emitted-by-observable&#34;&gt;1. &lt;em&gt;map&lt;/em&gt; - modifies values emitted by observable&lt;/h3&gt;
+
+&lt;p&gt;Let&amp;rsquo;s assume we have http service that returns user information in json format.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;{
+  &amp;quot;name&amp;quot;: &amp;quot;John&amp;quot;,
+  &amp;quot;age&amp;quot;: 24,
+  &amp;quot;hobbies&amp;quot;: [],
+  ...
+  a lot of other properties
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;However, on client side we need to know only user&amp;rsquo;s &lt;code&gt;name&lt;/code&gt; to handle application business logic. Then,
+we can do following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;this.httpClient.get(&#39;assets/user.json&#39;)
+  .pipe(
+    map((response: any) =&amp;gt; response.name),
+  )
+  .subscribe((name: string) =&amp;gt; {
+    this.userName = name;
+  });
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Map operator function gets emitted value as input and must return modified value as output.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;../assets/rxjs-main-operators/map_example.gif&#34; alt=&#34;Map example&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;2-filter-filters-values-emitted-by-observable-against-specified-condition&#34;&gt;2. &lt;em&gt;filter&lt;/em&gt;  - filters values emitted by observable against specified condition&lt;/h3&gt;
+
+&lt;p&gt;There is an html input element where user should type the correct answer on the given question.
+We may create observable that emits the input value each time when user types the character.
+Because we should do nothing until user finishes typing correct string there is a good case
+to use &lt;code&gt;filter&lt;/code&gt; operator to handle this. Once user has typed correct answer we show success alert
+to him.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;this.questionForm.get(&#39;answer&#39;).valueChanges
+  .pipe(
+    filter((value: string) =&amp;gt; {
+      return value.toLowerCase() === &#39;kyiv&#39;;
+    })
+  )
+  .subscribe((value) =&amp;gt; {
+    setTimeout(() =&amp;gt; {
+      alert(&#39;Correct!&#39;);
+    });
+  });
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;../assets/rxjs-main-operators/filter_example.gif&#34; alt=&#34;Filter example&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;3-merge-combines-multiple-observables-into-one&#34;&gt;3. &lt;em&gt;merge&lt;/em&gt; - combines multiple observables into one&lt;/h3&gt;
+
+&lt;p&gt;This operator mainly used when we should apply same logic on values emitted by different observables.
+Assume that we have several html inputs on the screen and should count total number of changes
+user has made in all of them over the time.
+We may separately subscribe to each input valueChanges but it is more lean and readable to
+use &lt;code&gt;merge operator in this case&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;merge(
+  this.form.get(&#39;first&#39;).valueChanges,
+  this.form.get(&#39;second&#39;).valueChanges,
+  this.form.get(&#39;third&#39;).valueChanges
+)
+  .subscribe((value) =&amp;gt; {
+    this.numberOfChanges++;
+  });
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;if you don&amp;rsquo;t use operator inside &lt;code&gt;pipe&lt;/code&gt; function you must import it from rxjs folder.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code&gt; import { merge } from &#39;rxjs&#39;;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;merge operator combines emitted values in the same order that they were emitted by the Observables
+(in contrast to &lt;code&gt;concat&lt;/code&gt; operator which combines only after first observable has completed).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&#34;../assets/rxjs-main-operators/merge_example.gif&#34; alt=&#34;Merge example&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;4-debounce-time-debouncing-based-on-time-between-input&#34;&gt;4. &lt;em&gt;debounce-time&lt;/em&gt; - debouncing based on time between input&lt;/h3&gt;
+
+&lt;p&gt;What if there is an html input and client should send http request right after user
+has typed searched text inside it. We may solve this task by sending request, for example,
+1 second after user stopped typing. And it is where &lt;code&gt;debounceTime&lt;/code&gt; operator comes into play.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; this.searchForm.get(&#39;search&#39;).valueChanges
+   .pipe(
+     debounceTime(1000)
+   )
+   .subscribe((value) =&amp;gt; {
+     this.requestValue = value;
+   });
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;../assets/rxjs-main-operators/debounceTime_example.gif&#34; alt=&#34;debounceTime example&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;5-combinelatest-when-any-observable-emits-a-value-emit-the-latest-value-from-each&#34;&gt;5. &lt;em&gt;combineLatest&lt;/em&gt; - when any observable emits a value, emit the latest value from each&lt;/h3&gt;
+
+&lt;p&gt;What if it is needed to combine responses from several services before displaying data on the page.
+We need to wait until all made http requests finish in order to accomplish this.
+&lt;em&gt;combineLatest&lt;/em&gt; helps to solve the issue.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;combineLatest(
+  this.requestName(),
+  this.requestHobbies()
+)
+  .subscribe(values =&amp;gt; {
+    this.result = `${values[0]} hobbies are ${values[1]}`;
+  });
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;../assets/rxjs-main-operators/combineLatest_example.gif&#34; alt=&#34;combineLatest example&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;6-mergemap&#34;&gt;6. &lt;em&gt;mergeMap&lt;/em&gt;&lt;/h3&gt;
+
+&lt;p&gt;There is a great &lt;a href=&#34;https://netbasal.com/understanding-mergemap-and-switchmap-in-rxjs-13cf9c57c885&#34;&gt;article&lt;/a&gt;
+that explains those operators.&lt;/p&gt;
+
+&lt;p&gt;Let us assume we have a button and create Observable for emitting its click events:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;const click$ = fromEvent(this.startInterval.nativeElement, &#39;click&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;After button is clicked we want to return new observable. We may do this way:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;click$
+  .pipe(
+    map((clickEvent) =&amp;gt; {
+      return interval(1000);
+    })
+  )
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In order to consume emitted values from &lt;code&gt;interval(1000)&lt;/code&gt; observable we need to subscribe to it.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; click$
+  .pipe(
+    map((clickEvent) =&amp;gt; {
+      return interval(1000).subscribe((item) =&amp;gt; {
+        console.log(item);
+      });
+    })
+  )
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This code looks bad because of nested subscribes. We will also have a problem with unsubscribing
+ from inner observables.&lt;/p&gt;
+
+&lt;p&gt;In order to simplify the syntax &lt;code&gt;mergeMap&lt;/code&gt; operator was created.
+ What it does: once inner observable &lt;code&gt;interval(1000)&lt;/code&gt; emits, merge its values into outer observable click$.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; click$
+   .pipe(
+     mergeMap((clickEvent) =&amp;gt; {
+       return interval(1000);
+     })
+   )
+   .subscribe((item) =&amp;gt; {
+     console.log(item);
+   });
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;One important point here: if you click button several times you will get several inner subscriptions.
+ Thus each new click returns &lt;em&gt;new&lt;/em&gt; observable.&lt;/p&gt;
+
+&lt;p&gt;If it is not what you need look at the next operator #6.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;../assets/rxjs-main-operators/mergeMap_example.gif&#34; alt=&#34;mergeMap example&#34; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;7-switchmap&#34;&gt;7. &lt;em&gt;switchMap&lt;/em&gt;&lt;/h3&gt;
+
+&lt;p&gt;Works same way as &lt;code&gt;mergeMap&lt;/code&gt; but cancels the inner subscription once outer observable emits.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;../assets/rxjs-main-operators/switchMap_example.gif&#34; alt=&#34;switchMap example&#34; /&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>The main idea behind rxjs</title>
+      <link>http://odushyn.github.io/post/rxjs-main-concept/</link>
+      <pubDate>Tue, 10 Jul 2018 23:31:01 +0200</pubDate>
+      
+      <guid>http://odushyn.github.io/post/rxjs-main-concept/</guid>
+      <description>
+
+&lt;h3 id=&#34;what-is-rxjs&#34;&gt;What is rxjs?&lt;/h3&gt;
+
+&lt;p&gt;ReactiveX is a library for composing asynchronous and event-based programs by using observable sequences.
+rxjs is implementation of  Observer pattern in javascript programming language (&lt;a href=&#34;http://reactivex.io/intro.html&#34;&gt;source&lt;/a&gt;).&lt;/p&gt;
+
+&lt;p&gt;Not clear yet&amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;All my following examples are taken from &lt;a href=&#34;https://rxjs-dev.firebaseapp.com/guide/overview&#34;&gt;official guide&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h4 id=&#34;first-example-create-observable&#34;&gt;First example: create observable&lt;/h4&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Count how many times the button was clicked.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Straightforward solution via using event listener and implementing callback function.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;var count = 0;
+var button = document.querySelector(&#39;button&#39;);
+button.addEventListener(&#39;click&#39;, () =&amp;gt; console.log(`Clicked ${++count} times`));
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;There is big disadvantage: callback function modifies external state - &lt;code&gt;count&lt;/code&gt; variable.
+In big projects such behaviour may lead to unexpected errors.&lt;/p&gt;
+
+&lt;p&gt;In example above we handle each event separately. However, what if we could handle the flow of these events?
+This idea is implemented inside Observable object. Observable object emits events and gives possibility to
+manipulate them in sequential way.&lt;/p&gt;
+
+&lt;p&gt;There are many ways to create an Observable out of html events flow. Let&amp;rsquo;s use &lt;code&gt;fromEvent&lt;/code&gt; function.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;let observable = fromEvent(button, &#39;click&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once we have an Observable that emit events we also need the way to consume those events.
+Here is where Observer comes to play. We observe emitted values using &lt;code&gt;subscribe&lt;/code&gt; method.
+Subscribe method consumes 3 callbacks: for success consumes event, error consumes error
+and onComplete callback consumes nothing.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;let observable = fromEvent(button, &#39;click&#39;);
+let subscription = observable.subscribe((event) =&amp;gt; {}, (error) =&amp;gt; {}, () =&amp;gt; {})
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Method subscribe returns &lt;code&gt;Subscription&lt;/code&gt; object the mainly used for canceling subscription
+by calling &lt;code&gt;subscription.unsubscribe()&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;Based &lt;em&gt;ONLY&lt;/em&gt; on this knowledge we may implement next solution(&lt;em&gt;ugly, DO NOT repeat this&lt;/em&gt;)&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;let count = 0;
+const button = document.querySelector(&#39;button&#39;);
+fromEvent(button, &#39;click&#39;).subscribe(count =&amp;gt; {
+    console.log(`RXJS: Clicked ${count++} times`)
+});
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Where the benefit of using Observable you may ask? After all, we still have global count variable.&lt;/p&gt;
+
+&lt;p&gt;What if we could manipulate the flow itself and change each events or values emitted by Observable before getting it
+into subscribe function as parameter?
+There is where a very power concept of Operators comes to play at this exact moment.
+To solve our problem we may use &lt;code&gt;scan&lt;/code&gt; operator.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;const button = document.querySelector(&#39;button&#39;);
+fromEvent(button, &#39;click&#39;).pipe(
+  scan(count =&amp;gt; count + 1, 0)
+)
+.subscribe(count =&amp;gt; console.log(`RXJS: Clicked ${count} times`));
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;scan&lt;/code&gt; operator implements callback function and aggregates the result into count variable.&lt;/p&gt;
+
+&lt;p&gt;Since rxjs-v6 it&amp;rsquo;s mandatory to use &lt;code&gt;pipe&lt;/code&gt; method and pass operators inside it as its parameters.
+Thus, before you get emitted event inside &lt;code&gt;subscribe&lt;/code&gt; function all events go through the &lt;code&gt;pipe&lt;/code&gt; and
+gets modified by the specified operators.&lt;/p&gt;
+
+&lt;p&gt;Last solution by using &lt;code&gt;observable&lt;/code&gt; and &lt;code&gt;scan&lt;/code&gt; operators provides clean solution without using global variables
+and you can easily scale it.&lt;/p&gt;
+
+&lt;h4 id=&#34;second-example-apply-operator&#34;&gt;Second example: apply operator&lt;/h4&gt;
+
+&lt;ul&gt;
+&lt;li&gt;The task is to allow and handle at most one click per second.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Straightforward solution:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;var count = 0;
+var rate = 1000;
+var lastClick = Date.now() - rate;
+var button = document.querySelector(&#39;button&#39;);
+button.addEventListener(&#39;click&#39;, () =&amp;gt; {
+  if (Date.now() - lastClick &amp;gt;= rate) {
+    console.log(`Clicked ${++count} times`);
+    lastClick = Date.now();
+  }
+});
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Using observables:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;const { fromEvent } = rxjs;
+const { throttleTime, scan } = rxjs.operators;
+const button = document.querySelector(&#39;button&#39;);
+fromEvent(button, &#39;click&#39;).pipe(
+  throttleTime(1000),
+  scan(count =&amp;gt; count + 1, 0)
+)
+.subscribe(count =&amp;gt; console.log(`Clicked ${count} times`));
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Just look at how is readable the solution that uses observables. That is because it allows to control the flow.
+&lt;code&gt;throttleTime&lt;/code&gt; operator emits latest value when specified duration has passed and &lt;code&gt;scan&lt;/code&gt; operator counts the
+total number of events.
+Operators are executed in the order they specified inside pipe function. Scan operator is not executed until
+&lt;code&gt;throttleTime&lt;/code&gt; emits the value. &lt;code&gt;subscribe&lt;/code&gt; function is not executed until all operators are passed.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://image.slidesharecdn.com/fpjsluisatenciobocajs-160504163409/95/luis-atencio-on-rxjs-22-638.jpg?cb=1462379809&#34;&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;third-example-scale-existing-solution&#34;&gt;Third example: scale existing solution&lt;/h4&gt;
+
+&lt;p&gt;Lets make task more complicated and count the sum of current mouse x positions.
+Event listener:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;let count = 0;
+const rate = 1000;
+let lastClick = Date.now() - rate;
+const button = document.querySelector(&#39;button&#39;);
+button.addEventListener(&#39;click&#39;, (event) =&amp;gt; {
+  if (Date.now() - lastClick &amp;gt;= rate) {
+    count += event.clientX;
+    console.log(count)
+    lastClick = Date.now();
+  }
+});
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Observable:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;const { fromEvent } = rxjs;
+const { throttleTime, map, scan } = rxjs.operators;
+
+const button = document.querySelector(&#39;button&#39;);
+fromEvent(button, &#39;click&#39;).pipe(
+  throttleTime(1000),
+  map(event =&amp;gt; event.clientX),
+  scan((count, clientX) =&amp;gt; count + clientX, 0)
+)
+.subscribe(count =&amp;gt; console.log(count));
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Event listener solution required refactoring of the algorithm but Observable approach
+adding of one more operator - &lt;code&gt;map&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;map&lt;/code&gt; transforms the items emitted by an Observable by applying a function to each item.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Firstly, click happened by user and click event was emitted by browser.&lt;/li&gt;
+&lt;li&gt;The flow of click events is handled by our Observable. Observable emits same event further.&lt;/li&gt;
+&lt;li&gt;Then this event is processed via the pipe. &lt;code&gt;throttleTime&lt;/code&gt; checks whether one second passed and if
+so emits click event further to &lt;code&gt;map&lt;/code&gt; operator.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;map&lt;/code&gt; is transform operator and in our case it transforms click event(object) to coordinate(number).
+Therefore, scan get number as input instead of event object.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Browser click(emits Event() object) -&amp;gt; Observable(Event()) -&amp;gt;
+-&amp;gt; Pipe[throttleTime(Event()) -&amp;gt; map(number) -&amp;gt; scan(number)] -&amp;gt; subscribe(number).&lt;/p&gt;
+
+&lt;p&gt;Note: &lt;code&gt;scan&lt;/code&gt; first parameter is always aggregated value and the second one is emitted value.&lt;/p&gt;
+
+&lt;p&gt;Conclusion: rxjs is (almost as any other library) just helps to solve same problems in different way.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;introduces an abstraction for managing flows of events(first example) and the concept of Observable,
+Observer, Subscription operators and creates.&lt;/li&gt;
+&lt;li&gt;helps to solve event based tasks rather in a declarative
+than imperative way.&lt;/li&gt;
+&lt;li&gt;code becomes more readable and programmer mainly thinks about which operators to apply instead of implementing
+algorithms(2nd and 3rd examples).&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>State Pattern. JavaScript implementation.</title>
+      <link>http://odushyn.github.io/post/state-pattern-js/</link>
+      <pubDate>Sun, 05 Nov 2017 00:00:00 +0000</pubDate>
+      
+      <guid>http://odushyn.github.io/post/state-pattern-js/</guid>
+      <description>
+
+&lt;h3 id=&#34;introduction&#34;&gt;Introduction:&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/State_pattern&#34;&gt;According to wikipedia&lt;/a&gt; it is a behavioral software design pattern that
+implements a &lt;em&gt;state machine&lt;/em&gt; in an object-oriented way.&lt;/p&gt;
+
+&lt;p&gt;What&amp;rsquo;s &lt;em&gt;state machine&lt;/em&gt;?
+Finite State Machine(FSM) is some abstract machine that can be in exactly one state at particular moment of time and
+has rules for changing the states(making transition).&lt;/p&gt;
+
+&lt;p&gt;Basically, FSM can be defined by 3 things:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;list of states&lt;/li&gt;
+&lt;li&gt;rules for chaning the states&lt;/li&gt;
+&lt;li&gt;initial state&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;examples&#34;&gt;Examples&lt;/h3&gt;
+
+&lt;p&gt;We interact with state machines every day.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;traffic lights&lt;/li&gt;
+&lt;li&gt;elevators&lt;/li&gt;
+&lt;li&gt;ticket machines&lt;/li&gt;
+&lt;li&gt;minibanks&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;defining-traffic-light-as-state-machine&#34;&gt;Defining traffic light as state machine&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;List of states: green/yellow/red&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Rules:&lt;/p&gt;
+
+&lt;p&gt;-if light is green move to yellow condition.&lt;/p&gt;
+
+&lt;p&gt;-if light is yellow move to red condition.&lt;/p&gt;
+
+&lt;p&gt;-if light is red move to green condition&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Initial state: green.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;implementation-without-state-pattern&#34;&gt;Implementation without state pattern&lt;/h3&gt;
+
+&lt;p&gt;Before using state pattern itself let&amp;rsquo;s try to implement traffic light logic straightforward. We are going to create
+object &lt;em&gt;State&lt;/em&gt; that will represents traffic lights(green, yellow or red) and use if/else statements to handle lights
+changing.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-js&#34;&gt;function LightMachine(light) {
+  // current state  
+  this.light = light;
+  printInfo(this.light);
+  
+  this.changeLight = function() {
+    // transition rules  
+    if (this.light === &amp;quot;GREEN&amp;quot;) {
+      this.light = &amp;quot;YELLOW&amp;quot;;
+    } else if (this.light === &amp;quot;YELLOW&amp;quot;) {
+      this.light = &amp;quot;RED&amp;quot;;
+    } else if (this.light === &amp;quot;RED&amp;quot;) {
+      this.light = &amp;quot;GREEN&amp;quot;;
+    }
+    printInfo(this.light);
+  };
+  
+  function printInfo(light){
+    console.log(&#39;Current light: &#39; + light);
+  }
+}
+
+// create initial state &#39;GREEN&#39;
+var lightMachine = new LightMachine(&#39;GREEN&#39;);
+lightMachine.changeLight(); // YELLOW
+lightMachine.changeLight(); // RED
+lightMachine.changeLight(); // GREEN
+lightMachine.changeLight(); // YELLOW
+lightMachine.changeLight(); // RED
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Everything looks great except the branched out and coupled code in the rules part. Considering more complex example, you will get
+more different and complicated if/else statements which makes code even less readable and maintainable.&lt;/p&gt;
+
+&lt;h3 id=&#34;implementation-with-state-pattern&#34;&gt;Implementation with state pattern&lt;/h3&gt;
+
+&lt;p&gt;So, let&amp;rsquo;s try to decouple this code.&lt;/p&gt;
+
+&lt;p&gt;The reason of such branching code is that we try to handle all transition logic in one place. Let&amp;rsquo;s make it different way,
+so each state keeping its transition rules logic by itself.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-js&#34;&gt;let Green = function() {
+  this.name = &amp;quot;Green&amp;quot;;
+  this.transition = function(trafficLight) {
+    trafficLight.setLight(new Yellow());
+  }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We have created an object that encapsulates(holds) all particular state internal data(i.e. state name)
+and implements common for all states function &lt;em&gt;transition&lt;/em&gt; that contains rules.
+The same should be done for each state. Basically, state object by itself only answers the question:&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;&amp;ldquo;What must be the next state according to the defined rules?&amp;rdquo;&lt;/em&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-js&#34;&gt;let Yellow = function() {
+  this.name = &amp;quot;Yellow&amp;quot;;
+  this.transition = function(trafficLight) {
+    // according to the rules next state should be Red
+    trafficLight.setLight(new Red());
+  }
+};
+
+let Red = function(trafficLight) {
+  this.name = &amp;quot;Red&amp;quot;;
+  // according to the rules next state should be Green
+  this.transition = function(trafficLight) {
+    trafficLight.setLight(new Green());
+  }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We are done with states, but we need to be able to start, stop the system, put system in the specified state,
+keep the particular state, implement any logic between the transitions.
+We also would like to know answers on following questions:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;What is the current state of the system?&lt;/li&gt;
+&lt;li&gt;What are the statistics (how many times states are changed, what state is the most &amp;ldquo;popular&amp;rdquo;, etc)?&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Let&amp;rsquo;s create a function for that exact reason. People usually  call it &lt;em&gt;context&lt;/em&gt; object because it keeps information
+that&amp;rsquo;s common and available for each state.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;let TrafficLight = function(initialState) {
+  this.currentState = initialState;
+  
+  this.setLight = function(newLight) {
+    this.currentState = newLight;
+    console.log(&#39;Current state: &#39; + this.currentState.name);
+  }
+  this.changeLight = function() {
+    this.currentState.transition(this);
+  }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;As we see it contains two methods. &lt;em&gt;setLight&lt;/em&gt; sets the current traffic light and &lt;em&gt;changeLight&lt;/em&gt; is responsible
+for transition according to the current state&amp;rsquo;s rules. The rules are encapsulated in each state object.
+Therefore, we do not have if/else hell and spaghetti code anymore&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;There is only one interface(TrafficLight) which contains current state and delegates implementation of transitions to state objects.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Code looks much more readable and cleaner than in the first approach. This approach is called &amp;ldquo;State pattern&amp;rdquo;.
+We are ready to use our traffic light implemented via &lt;em&gt;State Pattern&lt;/em&gt; now!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;var stateContext = new TrafficLight(new Green());
+stateContext.changeLight();
+stateContext.changeLight();
+stateContext.changeLight();
+stateContext.changeLight();
+stateContext.changeLight();
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Check out &lt;a href=&#34;http://plnkr.co/edit/iJo6CfGjX0EuiZ9BIj4l&#34;&gt;plunker&lt;/a&gt; to see full version.&lt;/p&gt;
+
+&lt;h3 id=&#34;smart-traffic-light&#34;&gt;Smart traffic light&lt;/h3&gt;
+
+&lt;p&gt;I&amp;rsquo;ve added timing for switching between the lights to make our traffic light more real.
+Check out &lt;a href=&#34;http://plnkr.co/edit/V5bUWp&#34;&gt;this plunk&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Hope you enjoyed reading!&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>HTTP. How to return errors to clients?</title>
+      <link>http://odushyn.github.io/post/http-return-errors-to-clients/</link>
+      <pubDate>Wed, 18 May 2016 00:00:00 +0000</pubDate>
+      
+      <guid>http://odushyn.github.io/post/http-return-errors-to-clients/</guid>
+      <description>
+
+&lt;p&gt;HTTP is based on the exchange of representations.
+Errors are not an exception.
+Whenever error happens on a server either because of wrong request or server internal problems - &lt;em&gt;always&lt;/em&gt; return a representation that reflects the current state of the error.&lt;/p&gt;
+
+&lt;p&gt;Response must contain:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Response code&lt;/li&gt;
+&lt;li&gt;Body containing the error description.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;response-code&#34;&gt;Response code&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Helps clients to understand the reason why error happened&lt;/p&gt;
+
+&lt;p&gt;Return &lt;em&gt;4xx&lt;/em&gt; status code for errors due to client inputs, &lt;em&gt;5xx&lt;/em&gt; - for errors due to server implementation.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Keeps interacting correctly &amp;ldquo;visible&amp;rdquo; for middle-ware software&lt;/p&gt;
+
+&lt;p&gt;Common mistake is to return success status code (200 - 206 and 300 - 307) for error describing.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code&gt;    HTTP/1.1 200 OK
+    Content-Type: application/xml
+    
+    &amp;lt;error&amp;gt;
+        &amp;lt;message&amp;gt;There are no free seats left&amp;lt;/message&amp;gt;
+    &amp;lt;/error&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Doing this prevents HTTP-aware software from detecting errors.
+For example, a cache will store it as a successful response and serve it to subsequent clients even when clients may be able to make a successful request.&lt;/p&gt;
+
+&lt;p&gt;Client can rely on error status returned by a server. Client error handling may looks like:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-js&#34;&gt;    if(response.code &amp;gt;= 400 and response.code &amp;lt; 400) {
+        // Failure due to client error
+        ...
+    }
+    else if(response.code &amp;gt;= 500) {
+        // Failure due to server error
+        ...
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Errors due to client inputs (the most often used ones):&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;em&gt;400 (Bad Request)&lt;/em&gt; - return this error when your server cannot decipher client requests because of syntactical errors.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;401 (Unauthorized)&lt;/em&gt; - return this when the client is not authorized to access the resource but may be able to gain access after authentication.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;403 (Forbidden)&lt;/em&gt; - use this when your server will not let the client gain access to the resource and
+authentication will not help. For instance, you can return this when the user is already authenticated but is not
+allowed to request a resource.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;404 (Not Found)&lt;/em&gt; - return this when the resource is not found. If possible, specify a reason in the
+message body.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;405 (Not Allowed)&lt;/em&gt; - return this when an HTTP method is not allowed for this resource.
+Return an Allow header with methods that are valid for this resource.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;409 (Conflict)&lt;/em&gt; - return this when the request conflicts with the current state of the resource. Include
+a body explaining the reason.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;410 (Gone)&lt;/em&gt; - return this when the resource used to exist, but it does not anymore (if you don&amp;rsquo;t keep track of deleted files on a server then just return 404).&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;413 (Request Entity Too Large)&lt;/em&gt; - return this when the body of a POST of PUT request is too large. If possible, specify what is allowed in the body, and provide alternatives.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;415 (Unsupported Media Type)&lt;/em&gt; - return this error when a client sends the message body in a format that the server
+does not understand.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Error due to server error (the most often used ones):&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;em&gt;500 (Internal Server Error)&lt;/em&gt; - this is the best code to return when your code on the server side failed due to some    implementation bug.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;503 (Service Unavailable)&lt;/em&gt; - return this when the server cannot fulfil the request either for some specific interval
+or for an undetermined amount of time.
+Two common conditions that prompt this error are failures with back-end servers
+(such as a database connection failure) or when the client exceeded some rate limit
+set by the server.
+If possible, include a Retry-After response header with either a date or a number
+of seconds as a hint.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;response-body&#34;&gt;Response body&lt;/h3&gt;
+
+&lt;p&gt;&lt;em&gt;Describes the error in a plain text or human readable HTML.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The body must contain enough information to understand why the error occurred and how it can be fixed by the client.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Provide a link to the documentation with error detailed description if the one exist.&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;If you are logging errors on a server side provide a link that can be used to refer to this error.&lt;/li&gt;
+&lt;li&gt;Keep the response body descriptive, but exclude details such as stack traces, errors from
+database connection failures, etc.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I prefer using the next template:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-json&#34;&gt;{
+    message: Impossible to order a seat
+    description: There are no free seats left
+    code: 1000
+    link: http://myproject/documentation/seats/ordering
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;code&lt;/em&gt; is a identifier for an error message. It makes possible maintaining different translations for each error message on a client side for example.&lt;/p&gt;
+
+&lt;h4 id=&#34;references&#34;&gt;References&lt;/h4&gt;
+
+&lt;ol&gt;
+&lt;li&gt;RESTful Web Services Cookbook (O&amp;rsquo;Reilly Media) by Subbu Allamaraju
+
+
+
+
+
+
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,290 @@
+    <!DOCTYPE html>
+<html lang="en-us" >
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="Oleksandr Dushyn">
+  
+  
+  <meta name="description" content="Blogging site">
+  
+  <meta name="generator" content="Hugo 0.16" />
+  <title>HTTP. How to return errors to clients? &middot; Some blog</title>
+  <link rel="shortcut icon" href="http://odushyn.github.io/images/favicon.ico">
+  <link rel="stylesheet" href="http://odushyn.github.io/css/style.css">
+  <link rel="stylesheet" href="http://odushyn.github.io/css/highlight.css">
+  <link rel="stylesheet" href="http://odushyn.github.io//css/open_sans_font.css">
+  
+
+  
+  <link rel="stylesheet" href="http://odushyn.github.io/fontawesome/css/font-awesome.min.css">
+  
+
+  
+</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='http://odushyn.github.io/'> <span class="arrow">←</span>Home</a>
+	
+
+	
+		<a href='http://odushyn.github.io/about'>About</a>
+	
+
+	
+	<a href='http://odushyn.github.io/projects'>Projects</a>
+	
+
+	
+</nav>
+
+        <section id="wrapper">
+            <article class="post">
+                <header>
+                    <h1>HTTP. How to return errors to clients?</h1>
+                    <h2 class="headline">
+                    May 18, 2016 
+                    <br>
+                    
+                    </h2>
+                </header>
+                <section id="post-body">
+                    
+
+<p>HTTP is based on the exchange of representations.
+Errors are not an exception.
+Whenever error happens on a server either because of wrong request or server internal problems - <em>always</em> return a representation that reflects the current state of the error.</p>
+
+<p>Response must contain:</p>
+
+<ol>
+<li>Response code</li>
+<li>Body containing the error description.</li>
+</ol>
+
+<h3 id="response-code">Response code</h3>
+
+<ol>
+<li><p>Helps clients to understand the reason why error happened</p>
+
+<p>Return <em>4xx</em> status code for errors due to client inputs, <em>5xx</em> - for errors due to server implementation.</p></li>
+
+<li><p>Keeps interacting correctly &ldquo;visible&rdquo; for middle-ware software</p>
+
+<p>Common mistake is to return success status code (200 - 206 and 300 - 307) for error describing.</p></li>
+</ol>
+
+<pre><code>    HTTP/1.1 200 OK
+    Content-Type: application/xml
+    
+    &lt;error&gt;
+        &lt;message&gt;There are no free seats left&lt;/message&gt;
+    &lt;/error&gt;
+</code></pre>
+
+<p>Doing this prevents HTTP-aware software from detecting errors.
+For example, a cache will store it as a successful response and serve it to subsequent clients even when clients may be able to make a successful request.</p>
+
+<p>Client can rely on error status returned by a server. Client error handling may looks like:</p>
+
+<pre><code class="language-js">    if(response.code &gt;= 400 and response.code &lt; 400) {
+        // Failure due to client error
+        ...
+    }
+    else if(response.code &gt;= 500) {
+        // Failure due to server error
+        ...
+    }
+</code></pre>
+
+<p><strong>Errors due to client inputs (the most often used ones):</strong></p>
+
+<ul>
+<li><em>400 (Bad Request)</em> - return this error when your server cannot decipher client requests because of syntactical errors.</li>
+<li><em>401 (Unauthorized)</em> - return this when the client is not authorized to access the resource but may be able to gain access after authentication.</li>
+<li><em>403 (Forbidden)</em> - use this when your server will not let the client gain access to the resource and
+authentication will not help. For instance, you can return this when the user is already authenticated but is not
+allowed to request a resource.</li>
+<li><em>404 (Not Found)</em> - return this when the resource is not found. If possible, specify a reason in the
+message body.</li>
+<li><em>405 (Not Allowed)</em> - return this when an HTTP method is not allowed for this resource.
+Return an Allow header with methods that are valid for this resource.</li>
+<li><em>409 (Conflict)</em> - return this when the request conflicts with the current state of the resource. Include
+a body explaining the reason.</li>
+<li><em>410 (Gone)</em> - return this when the resource used to exist, but it does not anymore (if you don&rsquo;t keep track of deleted files on a server then just return 404).</li>
+<li><em>413 (Request Entity Too Large)</em> - return this when the body of a POST of PUT request is too large. If possible, specify what is allowed in the body, and provide alternatives.</li>
+<li><em>415 (Unsupported Media Type)</em> - return this error when a client sends the message body in a format that the server
+does not understand.</li>
+</ul>
+
+<p><strong>Error due to server error (the most often used ones):</strong></p>
+
+<ul>
+<li><em>500 (Internal Server Error)</em> - this is the best code to return when your code on the server side failed due to some    implementation bug.</li>
+<li><em>503 (Service Unavailable)</em> - return this when the server cannot fulfil the request either for some specific interval
+or for an undetermined amount of time.
+Two common conditions that prompt this error are failures with back-end servers
+(such as a database connection failure) or when the client exceeded some rate limit
+set by the server.
+If possible, include a Retry-After response header with either a date or a number
+of seconds as a hint.</li>
+</ul>
+
+<h3 id="response-body">Response body</h3>
+
+<p><em>Describes the error in a plain text or human readable HTML.</em></p>
+
+<p>The body must contain enough information to understand why the error occurred and how it can be fixed by the client.</p>
+
+<ul>
+<li>Provide a link to the documentation with error detailed description if the one exist.<br /></li>
+<li>If you are logging errors on a server side provide a link that can be used to refer to this error.</li>
+<li>Keep the response body descriptive, but exclude details such as stack traces, errors from
+database connection failures, etc.</li>
+</ul>
+
+<p>I prefer using the next template:</p>
+
+<pre><code class="language-json">{
+    message: Impossible to order a seat
+    description: There are no free seats left
+    code: 1000
+    link: http://myproject/documentation/seats/ordering
+}
+</code></pre>
+
+<p><em>code</em> is a identifier for an error message. It makes possible maintaining different translations for each error message on a client side for example.</p>
+
+<h4 id="references">References</h4>
+
+<ol>
+<li>RESTful Web Services Cookbook (O&rsquo;Reilly Media) by Subbu Allamaraju
+
+
+
+
+
+
+<br /></li>
+</ol>
+
+                </section>
+            </article>
+            <footer id="post-meta" class="clearfix">
+                <a href="https://twitter.com/ODushyn">
+                        <img class="avatar" src="http://odushyn.github.io/images/im.png">
+                        <div>
+                            <span class="dark">Oleksandr Dushyn</span>
+                            <span>The one who tries to understand</span>
+                        </div>
+                    </a>
+                <section id="sharing">
+                    <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2fodushyn.github.io%2fpost%2fhttp-return-errors-to-clients%2f - HTTP.%20How%20to%20return%20errors%20to%20clients%3f by @ODushyn"><span class="icon-twitter"> Tweet</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> Share</span>
+</a>
+
+                </section>
+            </footer>
+
+            <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'odushyn';
+    var disqus_identifier = 'http:\/\/odushyn.github.io\/post\/http-return-errors-to-clients\/';
+    var disqus_title = 'HTTP. How to return errors to clients?';
+    var disqus_url = 'http:\/\/odushyn.github.io\/post\/http-return-errors-to-clients\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+            <ul id="post-list" class="archive readmore">
+    <h3>Read more</h3>
+    
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/rxjs-most-often-used-operators/">Most often used rxjs operators<aside class="dates">Jul 22</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/rxjs-main-concept/">The main idea behind rxjs<aside class="dates">Jul 10</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/state-pattern-js/">State Pattern. JavaScript implementation.<aside class="dates">Nov 5</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/http-return-errors-to-clients/">HTTP. How to return errors to clients?<aside class="dates">May 18</aside></a>
+        </li>
+        
+   
+</ul>
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.facebook.com/oleks.dushyn">
+        <i class="fa fa-facebook"></i>
+    </a>
+    
+    <a class="symbol" href="https://github.com/ODushyn">
+        <i class="fa fa-github"></i>
+    </a>
+    
+    <a class="symbol" href="https://twitter.com/ODushyn">
+        <i class="fa fa-twitter"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+        © Copyright 2018 Oleksandr Dushyn
+    
+    </p>
+</footer>
+
+        </section>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://odushyn.github.io/js/main.js"></script>
+<script src="http://odushyn.github.io/js/highlight.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+
+    </body>
+</html>

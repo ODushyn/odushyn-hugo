@@ -1,0 +1,363 @@
+    <!DOCTYPE html>
+<html lang="en-us" >
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta name="author" content="Oleksandr Dushyn">
+  
+  
+  <meta name="description" content="Blogging site">
+  
+  <meta name="generator" content="Hugo 0.16" />
+  <title>Most often used rxjs operators &middot; Some blog</title>
+  <link rel="shortcut icon" href="http://odushyn.github.io/images/favicon.ico">
+  <link rel="stylesheet" href="http://odushyn.github.io/css/style.css">
+  <link rel="stylesheet" href="http://odushyn.github.io/css/highlight.css">
+  <link rel="stylesheet" href="http://odushyn.github.io//css/open_sans_font.css">
+  
+
+  
+  <link rel="stylesheet" href="http://odushyn.github.io/fontawesome/css/font-awesome.min.css">
+  
+
+  
+</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='http://odushyn.github.io/'> <span class="arrow">←</span>Home</a>
+	
+
+	
+		<a href='http://odushyn.github.io/about'>About</a>
+	
+
+	
+	<a href='http://odushyn.github.io/projects'>Projects</a>
+	
+
+	
+</nav>
+
+        <section id="wrapper">
+            <article class="post">
+                <header>
+                    <h1>Most often used rxjs operators</h1>
+                    <h2 class="headline">
+                    July 22, 2018 
+                    <br>
+                    
+                    </h2>
+                </header>
+                <section id="post-body">
+                    
+
+<p>In the previous <a href="http://odushyn.github.io/post/rxjs-main-concept">post</a> I was explaining the main concept behind rxjs library.
+In this one I am going to cover the most often used operators from rxjs library.
+I will show basic examples of their usage inside angular application.</p>
+
+<p><img src="../assets/rxjs-main-operators/app_operators.png" alt="Operators" /></p>
+
+<p>Full source code is available on <a href="https://github.com/ODushyn/angular-rxjs-operators-examples">github</a>.</p>
+
+<h3 id="1-map-modifies-values-emitted-by-observable">1. <em>map</em> - modifies values emitted by observable</h3>
+
+<p>Let&rsquo;s assume we have http service that returns user information in json format.</p>
+
+<pre><code>{
+  &quot;name&quot;: &quot;John&quot;,
+  &quot;age&quot;: 24,
+  &quot;hobbies&quot;: [],
+  ...
+  a lot of other properties
+}
+</code></pre>
+
+<p>However, on client side we need to know only user&rsquo;s <code>name</code> to handle application business logic. Then,
+we can do following:</p>
+
+<pre><code>this.httpClient.get('assets/user.json')
+  .pipe(
+    map((response: any) =&gt; response.name),
+  )
+  .subscribe((name: string) =&gt; {
+    this.userName = name;
+  });
+</code></pre>
+
+<p>Map operator function gets emitted value as input and must return modified value as output.</p>
+
+<p><img src="../assets/rxjs-main-operators/map_example.gif" alt="Map example" /></p>
+
+<h3 id="2-filter-filters-values-emitted-by-observable-against-specified-condition">2. <em>filter</em>  - filters values emitted by observable against specified condition</h3>
+
+<p>There is an html input element where user should type the correct answer on the given question.
+We may create observable that emits the input value each time when user types the character.
+Because we should do nothing until user finishes typing correct string there is a good case
+to use <code>filter</code> operator to handle this. Once user has typed correct answer we show success alert
+to him.</p>
+
+<pre><code>this.questionForm.get('answer').valueChanges
+  .pipe(
+    filter((value: string) =&gt; {
+      return value.toLowerCase() === 'kyiv';
+    })
+  )
+  .subscribe((value) =&gt; {
+    setTimeout(() =&gt; {
+      alert('Correct!');
+    });
+  });
+</code></pre>
+
+<p><img src="../assets/rxjs-main-operators/filter_example.gif" alt="Filter example" /></p>
+
+<h3 id="3-merge-combines-multiple-observables-into-one">3. <em>merge</em> - combines multiple observables into one</h3>
+
+<p>This operator mainly used when we should apply same logic on values emitted by different observables.
+Assume that we have several html inputs on the screen and should count total number of changes
+user has made in all of them over the time.
+We may separately subscribe to each input valueChanges but it is more lean and readable to
+use <code>merge operator in this case</code></p>
+
+<pre><code>merge(
+  this.form.get('first').valueChanges,
+  this.form.get('second').valueChanges,
+  this.form.get('third').valueChanges
+)
+  .subscribe((value) =&gt; {
+    this.numberOfChanges++;
+  });
+</code></pre>
+
+<p>Note:</p>
+
+<ul>
+<li>if you don&rsquo;t use operator inside <code>pipe</code> function you must import it from rxjs folder.</li>
+</ul>
+
+<pre><code> import { merge } from 'rxjs';
+</code></pre>
+
+<ul>
+<li>merge operator combines emitted values in the same order that they were emitted by the Observables
+(in contrast to <code>concat</code> operator which combines only after first observable has completed).</li>
+</ul>
+
+<p><img src="../assets/rxjs-main-operators/merge_example.gif" alt="Merge example" /></p>
+
+<h3 id="4-debounce-time-debouncing-based-on-time-between-input">4. <em>debounce-time</em> - debouncing based on time between input</h3>
+
+<p>What if there is an html input and client should send http request right after user
+has typed searched text inside it. We may solve this task by sending request, for example,
+1 second after user stopped typing. And it is where <code>debounceTime</code> operator comes into play.</p>
+
+<pre><code> this.searchForm.get('search').valueChanges
+   .pipe(
+     debounceTime(1000)
+   )
+   .subscribe((value) =&gt; {
+     this.requestValue = value;
+   });
+</code></pre>
+
+<p><img src="../assets/rxjs-main-operators/debounceTime_example.gif" alt="debounceTime example" /></p>
+
+<h3 id="5-combinelatest-when-any-observable-emits-a-value-emit-the-latest-value-from-each">5. <em>combineLatest</em> - when any observable emits a value, emit the latest value from each</h3>
+
+<p>What if it is needed to combine responses from several services before displaying data on the page.
+We need to wait until all made http requests finish in order to accomplish this.
+<em>combineLatest</em> helps to solve the issue.</p>
+
+<pre><code>combineLatest(
+  this.requestName(),
+  this.requestHobbies()
+)
+  .subscribe(values =&gt; {
+    this.result = `${values[0]} hobbies are ${values[1]}`;
+  });
+</code></pre>
+
+<p><img src="../assets/rxjs-main-operators/combineLatest_example.gif" alt="combineLatest example" /></p>
+
+<h3 id="6-mergemap">6. <em>mergeMap</em></h3>
+
+<p>There is a great <a href="https://netbasal.com/understanding-mergemap-and-switchmap-in-rxjs-13cf9c57c885">article</a>
+that explains those operators.</p>
+
+<p>Let us assume we have a button and create Observable for emitting its click events:</p>
+
+<pre><code>const click$ = fromEvent(this.startInterval.nativeElement, 'click');
+</code></pre>
+
+<p>After button is clicked we want to return new observable. We may do this way:</p>
+
+<pre><code>click$
+  .pipe(
+    map((clickEvent) =&gt; {
+      return interval(1000);
+    })
+  )
+</code></pre>
+
+<p>In order to consume emitted values from <code>interval(1000)</code> observable we need to subscribe to it.</p>
+
+<pre><code> click$
+  .pipe(
+    map((clickEvent) =&gt; {
+      return interval(1000).subscribe((item) =&gt; {
+        console.log(item);
+      });
+    })
+  )
+</code></pre>
+
+<p>This code looks bad because of nested subscribes. We will also have a problem with unsubscribing
+ from inner observables.</p>
+
+<p>In order to simplify the syntax <code>mergeMap</code> operator was created.
+ What it does: once inner observable <code>interval(1000)</code> emits, merge its values into outer observable click$.</p>
+
+<pre><code> click$
+   .pipe(
+     mergeMap((clickEvent) =&gt; {
+       return interval(1000);
+     })
+   )
+   .subscribe((item) =&gt; {
+     console.log(item);
+   });
+</code></pre>
+
+<p>One important point here: if you click button several times you will get several inner subscriptions.
+ Thus each new click returns <em>new</em> observable.</p>
+
+<p>If it is not what you need look at the next operator #6.</p>
+
+<p><img src="../assets/rxjs-main-operators/mergeMap_example.gif" alt="mergeMap example" /></p>
+
+<h3 id="7-switchmap">7. <em>switchMap</em></h3>
+
+<p>Works same way as <code>mergeMap</code> but cancels the inner subscription once outer observable emits.</p>
+
+<p><img src="../assets/rxjs-main-operators/switchMap_example.gif" alt="switchMap example" /></p>
+
+                </section>
+            </article>
+            <footer id="post-meta" class="clearfix">
+                <a href="https://twitter.com/ODushyn">
+                        <img class="avatar" src="http://odushyn.github.io/images/im.png">
+                        <div>
+                            <span class="dark">Oleksandr Dushyn</span>
+                            <span>The one who tries to understand</span>
+                        </div>
+                    </a>
+                <section id="sharing">
+                    <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2fodushyn.github.io%2fpost%2frxjs-most-often-used-operators%2f - Most%20often%20used%20rxjs%20operators by @ODushyn"><span class="icon-twitter"> Tweet</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> Share</span>
+</a>
+
+                </section>
+            </footer>
+
+            <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'odushyn';
+    var disqus_identifier = 'http:\/\/odushyn.github.io\/post\/rxjs-most-often-used-operators\/';
+    var disqus_title = 'Most often used rxjs operators';
+    var disqus_url = 'http:\/\/odushyn.github.io\/post\/rxjs-most-often-used-operators\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+            <ul id="post-list" class="archive readmore">
+    <h3>Read more</h3>
+    
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/rxjs-most-often-used-operators/">Most often used rxjs operators<aside class="dates">Jul 22</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/rxjs-main-concept/">The main idea behind rxjs<aside class="dates">Jul 10</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/state-pattern-js/">State Pattern. JavaScript implementation.<aside class="dates">Nov 5</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://odushyn.github.io/post/http-return-errors-to-clients/">HTTP. How to return errors to clients?<aside class="dates">May 18</aside></a>
+        </li>
+        
+   
+</ul>
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.facebook.com/oleks.dushyn">
+        <i class="fa fa-facebook"></i>
+    </a>
+    
+    <a class="symbol" href="https://github.com/ODushyn">
+        <i class="fa fa-github"></i>
+    </a>
+    
+    <a class="symbol" href="https://twitter.com/ODushyn">
+        <i class="fa fa-twitter"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+        © Copyright 2018 Oleksandr Dushyn
+    
+    </p>
+</footer>
+
+        </section>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://odushyn.github.io/js/main.js"></script>
+<script src="http://odushyn.github.io/js/highlight.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+
+    </body>
+</html>
