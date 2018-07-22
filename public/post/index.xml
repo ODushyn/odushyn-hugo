@@ -21,8 +21,6 @@
 In this one I am going to cover the most often used operators from rxjs library.
 I will show basic examples of their usage inside angular application.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&#34;../assets/rxjs-main-operators/app_operators.png&#34; alt=&#34;Operators&#34; /&gt;&lt;/p&gt;
-
 &lt;p&gt;Full source code is available on &lt;a href=&#34;https://github.com/ODushyn/angular-rxjs-operators-examples&#34;&gt;github&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h3 id=&#34;1-map-modifies-values-emitted-by-observable&#34;&gt;1. &lt;em&gt;map&lt;/em&gt; - modifies values emitted by observable&lt;/h3&gt;
