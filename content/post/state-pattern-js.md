@@ -8,7 +8,6 @@ menu:
 next: /tutorials/github-pages-blog
 prev: /tutorials/automated-deployments
 title: State Pattern. JavaScript implementation.
-weight: 10
 ---
 
 ### Introduction: 

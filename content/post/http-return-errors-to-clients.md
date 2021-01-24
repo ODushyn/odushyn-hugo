@@ -8,7 +8,6 @@ menu:
 next: /tutorials/github-pages-blog
 prev: /tutorials/automated-deployments
 title: HTTP. How to return errors to clients?
-weight: 10
 ---
 
 HTTP is based on the exchange of representations. 
