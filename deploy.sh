@@ -19,7 +19,7 @@ cd public
 git add -A
 
 # Commit changes.
-git commit -m "%msg%"
+git commit -m $(${msg})
 
 # Push source and build repos.
 git push -u origin master
